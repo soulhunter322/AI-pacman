@@ -74,20 +74,31 @@ class ReflexAgent(Agent):
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
-        nearest_ghost_dis = 1000000
-        for ghost_state in newGhostStates:
-            ghost_x, ghost_y = ghost_state.getPosition()
-            ghost_x = int(ghost_x)
-            ghost_y = int(ghost_y)
-            if newScaredTimes == 0:
-                nearest_ghost_dis = min(nearest_ghost_dis, manhattanDistance((ghost_x, ghost_y), newPos))
-        foods = newFood.asList()
-        nearest_food_dis = 100000
-        for food in foods:
-            nearest_food_dis = min(nearest_food_dis, manhattanDistance(food, newPos))
-        if not foods:
-            nearest_food_dis = 0
-        return successorGameState.getScore() - 12 / nearest_ghost_dis - nearest_food_dis / 10
+        totalScaredTime = newScaredTimes[0]
+
+        distToGhosts = 99999
+
+        for ghostState in newGhostStates:
+            if distToGhosts > manhattanDistance(newPos, ghostState.getPosition()):
+                distToGhosts = manhattanDistance(newPos, ghostState.getPosition())
+
+        if distToGhosts > 5 or totalScaredTime > 0:
+            distToGhosts = 9999999
+        # find closest food
+        tmp = 99999
+        for x in range(newFood.width):
+            for y in range(newFood.height):
+                if (newFood[x][y] is True):
+                    if tmp > manhattanDistance(newPos, (x, y)):
+                        tmp = manhattanDistance(newPos, (x, y))
+
+        if distToGhosts == 0:
+            distToGhosts = 0.01
+
+        if tmp == 0:
+            tmp = 0.1
+
+        return float(3.5 / tmp) + 10 * (currentGameState.getNumFood() - newFood.count()) - (0.6 / distToGhosts);
 
 def scoreEvaluationFunction(currentGameState):
     """
