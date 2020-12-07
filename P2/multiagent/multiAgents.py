@@ -74,31 +74,23 @@ class ReflexAgent(Agent):
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
-        totalScaredTime = newScaredTimes[0]
+        if successorGameState.isWin():
+            return float("inf")
 
-        distToGhosts = 99999
+        foodlist = newFood.asList()
+        foodDist = [util.manhattanDistance(food, newPos) for food in foodlist]
+        minFoodDist = min(foodDist) if len(foodDist) > 0 else 0
 
-        for ghostState in newGhostStates:
-            if distToGhosts > manhattanDistance(newPos, ghostState.getPosition()):
-                distToGhosts = manhattanDistance(newPos, ghostState.getPosition())
+        minGhostDist = 300
+        for i, ghostState in enumerate(newGhostStates):
+            if newScaredTimes[i] < 2:
+                if util.manhattanDistance(ghostState.getPosition(), newPos) < 2:
+                    return float("-inf")
 
-        if distToGhosts > 5 or totalScaredTime > 0:
-            distToGhosts = 9999999
-        # find closest food
-        tmp = 99999
-        for x in range(newFood.width):
-            for y in range(newFood.height):
-                if (newFood[x][y] is True):
-                    if tmp > manhattanDistance(newPos, (x, y)):
-                        tmp = manhattanDistance(newPos, (x, y))
+                newGhostDist = util.manhattanDistance(ghostState.getPosition(), newPos)
+                minGhostDist = min(newGhostDist, minGhostDist)
 
-        if distToGhosts == 0:
-            distToGhosts = 0.01
-
-        if tmp == 0:
-            tmp = 0.1
-
-        return float(3.5 / tmp) + 10 * (currentGameState.getNumFood() - newFood.count()) - (0.6 / distToGhosts);
+        return -minFoodDist + minGhostDist - len(foodlist) * 100
 
 def scoreEvaluationFunction(currentGameState):
     """
@@ -340,8 +332,6 @@ def betterEvaluationFunction(currentGameState):
     DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
-
-    util.raiseNotDefined()
-
+    
 # Abbreviation
 better = betterEvaluationFunction

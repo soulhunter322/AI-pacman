@@ -18,6 +18,9 @@ Pacman agents (in searchAgents.py).
 """
 
 import util
+from util import Stack
+from util import Queue
+from util import PriorityQueue
 
 class SearchProblem:
     """
@@ -68,15 +71,6 @@ def tinyMazeSearch(problem):
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
 
-class Node:
-    def __init__(self, state, pred, action, priority=0):
-        self.state = state
-        self.pred = pred
-        self.action = action
-        self.priority = priority
-    def __repr__(self):
-        return "State: {0}, Action: {1}".format(self.state, self.action)
-
 def depthFirstSearch(problem):
     """
     Search the deepest nodes in the search tree first.
@@ -89,70 +83,65 @@ def depthFirstSearch(problem):
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
     "*** YOUR CODE HERE ***"
-    visited = set()
-    stack = util.Stack()
-    stack.push((problem.getStartState(), []))
-
-    while not stack.isEmpty():
-        state, actions = stack.pop()
-
-        if state in visited:
-            continue
-
-        visited.add(state)
-
-        if problem.isGoalState(state):
-            return actions
-
-        for successor, action, stepCost in problem.getSuccessors(state):
-            if successor not in visited:
-                stack.push((successor, actions + [action]))
+    fringe=Stack()
+    closed_set=set()
+    action_list=list()
+    current_state_list=[problem.getStartState(),[]]
+    while True:
+      if problem.isGoalState(current_state_list[0]):
+        action_list=current_state_list[1]
+        break
+      if current_state_list[0] not in closed_set:
+        for i in problem.getSuccessors(current_state_list[0]):
+          if i[0] not in closed_set:
+            fringe.push([i[0],current_state_list[1]+[i[1]]])
+        closed_set.add(current_state_list[0])
+      if fringe.isEmpty():
+        break
+      current_state_list=fringe.pop()
+    return action_list
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    visited = set()
-    queue = util.Queue()
-    queue.push((problem.getStartState(), []))
-
-    while not queue.isEmpty():
-        state, actions = queue.pop()
-
-        if state in visited:
-            continue
-
-        visited.add(state)
-
-        if problem.isGoalState(state):
-            return actions
-
-        for successor, action, stepCost in problem.getSuccessors(state):
-            if successor not in visited:
-                queue.push((successor, actions + [action]))
+    fringe=Queue()
+    closed_set=set()
+    action_list=list()
+    current_state_list=[problem.getStartState(),[]]
+    while True:
+      if problem.isGoalState(current_state_list[0]):
+        action_list=current_state_list[1]
+        break
+      if current_state_list[0] not in closed_set:
+        for i in problem.getSuccessors(current_state_list[0]):
+          if i[0] not in closed_set:
+            fringe.push([i[0],current_state_list[1]+[i[1]]])
+        closed_set.add(current_state_list[0])
+      if fringe.isEmpty():
+        break
+      current_state_list=fringe.pop()
+    return action_list
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    visited = set()
-    p_queue = util.PriorityQueue()
-    p_queue.push((problem.getStartState(), []), 0)
-
-    while not p_queue.isEmpty():
-        state, actions = p_queue.pop()
-
-        if state in visited:
-            continue
-
-        visited.add(state)
-
-        if problem.isGoalState(state):
-            return actions
-
-        for successor, action, stepCost in problem.getSuccessors(state):
-            if successor not in visited:
-                p_queue.push(
-                    (successor, actions + [action]),
-                    stepCost + problem.getCostOfActions(actions))
+    fringe=PriorityQueue()
+    closed_set=set()
+    action_list=list()
+    current_state_list=[problem.getStartState(),[]]
+    while True:
+      if problem.isGoalState(current_state_list[0]):
+        action_list=current_state_list[1]
+        break
+      if current_state_list[0] not in closed_set:
+        for i in problem.getSuccessors(current_state_list[0]):
+          if i[0] not in closed_set:
+            fringe.push([i[0],current_state_list[1]+[i[1]]],problem.getCostOfActions(current_state_list[1]+[i[1]]))
+        closed_set.add(current_state_list[0])
+      if fringe.isEmpty():
+        break
+      current_state_list=fringe.pop()
+    return action_list
 
 def nullHeuristic(state, problem=None):
     """
@@ -164,27 +153,23 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    visited = set()
-    p_queue = util.PriorityQueue()
-    p_queue.push((problem.getStartState(), []), 0)
-
-    while not p_queue.isEmpty():
-        state, actions = p_queue.pop()
-
-        if state in visited:
-            continue
-
-        visited.add(state)
-
-        if problem.isGoalState(state):
-            return actions
-
-        for successor, action, stepCost in problem.getSuccessors(state):
-            if successor not in visited:
-                p_queue.push(
-                    (successor, actions + [action]),
-                    stepCost + problem.getCostOfActions(actions) +
-                    heuristic(successor, problem=problem))
+    fringe=PriorityQueue()
+    closed_set=set()
+    action_list=list()
+    current_state_list=[problem.getStartState(),[]]
+    while True:
+      if problem.isGoalState(current_state_list[0]):
+        action_list=current_state_list[1]
+        break
+      if current_state_list[0] not in closed_set:
+        for i in problem.getSuccessors(current_state_list[0]):
+          if i[0] not in closed_set:
+            fringe.push([i[0],current_state_list[1]+[i[1]]],problem.getCostOfActions(current_state_list[1]+[i[1]])+heuristic(i[0],problem))
+        closed_set.add(current_state_list[0])
+      if fringe.isEmpty():
+        break
+      current_state_list=fringe.pop()
+    return action_list
 
 
 # Abbreviations

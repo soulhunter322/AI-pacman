@@ -286,8 +286,8 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
-        ret = (self.startingPosition, False, False, False, False)
-        return ret
+        connersToVisit = (self.startingPosition,False, False,False,False)
+        return connersToVisit
 
     def isGoalState(self, state):
         """
