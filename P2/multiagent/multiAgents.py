@@ -431,7 +431,7 @@ def nullHeuristic(state, problem=None):
     """
     return 0
 
-
+from util import PriorityQueue
 def aStarSearch(problem, heuristic=nullHeuristic):
     fringe = PriorityQueue()
     closed_set = set()
@@ -474,42 +474,33 @@ def betterEvaluationFunction(currentGameState):
 
     """
     "*** YOUR CODE HERE ***"
-    score = scoreEvaluationFunction(currentGameState)
-    if currentGameState.isWin():
-        return float("inf")
+    Score = 0
+    Pacman_Pos = currentGameState.getPacmanPosition()
 
-    food = currentGameState.getFood()
-    food_remaining = len(food.asList())
+    Current_food = currentGameState.getFood().asList()
+    FoodNum = len(Current_food)
+    Score -= FoodNum
 
-    problem = FoodSearching(currentGameState)
+    Fooddistance_list = list()
+    for foodPos in Current_food:
+        distance = manhattanDistance(foodPos, Pacman_Pos)
+        Fooddistance_list.append(distance)
+    if len(Fooddistance_list) > 0:
+        Maxdistance_toFood = max(Fooddistance_list)
+        Score -= Maxdistance_toFood
 
-    nearest_food = aStarSearch(problem, heuristic=nearestFoodHeuristic)
-    nearest_food = 1 / len(nearest_food) if nearest_food else 1000
+    GhostStates = currentGameState.getGhostStates()
+    Ghostdistance_list = list()
+    for state in GhostStates:
+        distance = manhattanDistance(state.configuration.pos, Pacman_Pos)
+        Ghostdistance_list.append(distance)
+    if len(Ghostdistance_list) > 0:
+        Mindistance_toGhost = min(Ghostdistance_list)
+        Score += Mindistance_toGhost
+    ScaredTimes = [ghostState.scaredTimer for ghostState in GhostStates]
+    Score -= min(ScaredTimes)
 
-    position = currentGameState.getPacmanPosition()
-    ghosts = currentGameState.getGhostStates()
-    ghosts = [ghost for ghost in ghosts if ghost.scaredTimer == 0]
-    if ghosts:
-        ghost_distances = [manhattanDistance(ghost.getPosition(), position)
-                           for ghost in ghosts]
-        nearest_ghost = min(ghost_distances)
-        nearest_ghost = 9999 if (nearest_ghost == 0) else 1/nearest_ghost
-    else:
-        nearest_ghost = 0
-
-    capsules = currentGameState.getCapsules()
-    capsules_remaining = len(capsules)
-    if capsules:
-        capsule_distances = [manhattanDistance(capsule, position) for capsule in capsules]
-        nearest_capsule = 1 / min(capsule_distances)
-    else:
-        nearest_capsule = 0
-
-    scores = [nearest_food, nearest_capsule, nearest_ghost,food_remaining, capsules_remaining]
-    S = [5, 10, -5, -50, -100]
-    score = sum(a * b for a,b in zip(scores, S))
-    return score
-
+    return Score + currentGameState.getScore()
 
 #util.raiseNotDefined()
 
